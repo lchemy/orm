@@ -1,0 +1,220 @@
+import { List } from "immutable";
+
+import { Filter } from "../../filters";
+import { Orm, OrmRef } from "../../orms";
+import { SortBy, SortDirectionLike } from "../../sort-by";
+import { ColumnField } from "../column-field";
+import { DerivedField } from "../derived-field";
+import { Field } from "../field";
+
+import { JoinManyField } from "./join-many-field";
+import { JoinOneField } from "./join-one-field";
+import { PartitionedJoinManyField } from "./partitioned-join-many-field";
+import { PluckedJoinManyField } from "./plucked-join-many-field";
+import { PluckedJoinOneField } from "./plucked-join-one-field";
+
+export interface JoinFieldBuildersFactory<O extends Orm> {
+	one: <J extends Orm>(join: OrmRef<J>) => StartJoinOneFieldBuilder<O, J>;
+	many: <J extends Orm>(join: OrmRef<J>) => StartJoinManyFieldBuilder<O, J>;
+}
+
+export type JoinFields<O extends Orm> = (orm: O) => Field[];
+
+export type JoinSortBys<O extends Orm> = (orm: O) => Array<ColumnField | DerivedField | SortBy>;
+
+export interface JoinOn<O extends Orm> {
+	orm: O;
+	on: Filter | boolean;
+}
+
+export interface JoinBuilderThrough<O extends Orm> {
+	orm: OrmRef<O>;
+	on: JoinOnFilter;
+}
+
+export type JoinManyPartitions<K extends string> = {
+	[key in K]: Filter;
+};
+
+export type JoinManyPartitionTo<O extends Orm, K extends string> = (orm: O) => JoinManyPartitions<K>;
+
+export type JoinPluck<O extends Orm, T> = (orm: O) => ColumnField<T> | DerivedField<T>;
+
+export type JoinOnFilter = (...orms: Orm[]) => Filter;
+<%_
+	repeat(2, N, (n) => {
+		const typeParams = range(1, n).map((i) => `M${ i } extends Orm`).join(", "),
+			args = range(1, n).map((i) => `o${ i }: M${ i }`).join(", ");
+_%>
+export type JoinOnFilter<%= n %><<%- typeParams %>> = (<%- args %>) => Filter;
+<%_
+	});
+_%>
+
+export type JoinAuthFilter = (auth: any, ...orms: Orm[]) => Filter | boolean;
+<%_
+	repeat(2, N, (n) => {
+		const typeParams = range(1, n).map((i) => `M${ i } extends Orm`).join(", "),
+			args = range(1, n).map((i) => `o${ i }: M${ i }`).join(", ");
+_%>
+export type JoinAuthFilter<%- n %><<%- typeParams %>> = (auth: any, <%- args %>) => Filter | boolean;
+<%_
+	});
+_%>
+
+export interface JoinOneFieldBuilder<O extends Orm, J extends Orm> {
+	auth(auth: JoinAuthFilter): this;
+	noAuth(): this;
+	fields(fields: JoinFields<J>): this;
+	optional(): this;
+	$build(orm: O, path: List<string>): JoinOneField<J>;
+}
+export type StartJoinOneFieldBuilder<O extends Orm, J extends Orm> = StartJoinOneFieldBuilder2<O, J>;
+export interface BaseJoinOneFieldBuilder {
+	exclude(): this;
+	optional(): this;
+}
+<%_
+	repeat(2, N, (n) => {
+		const typeParams = ["O extends Orm", ...range(1, n - 2, 1).map((i) => `T${ i } extends Orm`), "J extends Orm"].join(", "),
+			throughOnTypes = ["O", ...range(1, n - 1).map((i) => `T${ i }`)].join(", "),
+			throughReturnTypes = ["O", ...range(1, n - 1).map((i) => `T${ i }`), "J"].join(", "),
+			onTypes = ["O", ...range(1, n - 2, 1).map((i) => `T${ i }`), "J"].join(", "),
+			pluckTypes = ["O", ...range(1, n - 2, 1).map((i) => `T${ i }`), "J", "T"].join(", ");
+_%>
+export interface StartJoinOneFieldBuilder<%- n %><<%- typeParams %>> extends BaseJoinOneFieldBuilder {
+<%_
+		if (n !== N) {
+_%>
+	through<T<%- n - 1 %> extends Orm>(orm: OrmRef<T<%- n - 1 %>>, on: JoinOnFilter<%- n %><<%- throughOnTypes %>>): StartJoinOneFieldBuilder<%- n + 1 %><<%- throughReturnTypes %>>;
+<%_
+		}
+_%>
+	on(on: JoinOnFilter<%- n %><<%- onTypes %>>): EndJoinOneFieldBuilder<%- n %><<%- onTypes %>>;
+}
+export interface EndJoinOneFieldBuilder<%- n %><<%- typeParams %>> extends BaseJoinOneFieldBuilder {
+	auth(auth: JoinAuthFilter<%- n %><<%- onTypes %>>): this;
+	noAuth(): this;
+	fields(fields: JoinFields<J>): this;
+	pluck<T>(pluck: JoinPluck<J, T>): PluckedJoinOneFieldBuilder<%- n %><<%- pluckTypes %>>;
+	$build(orm: O, path: List<string>): JoinOneField<J>;
+}
+<%_
+	});
+_%>
+
+export interface PluckedJoinOneFieldBuilder<O extends Orm, J extends Orm, T> {
+	exclude(): this;
+	optional(): this;
+	auth(auth: JoinAuthFilter): this;
+	noAuth(): this;
+	$build(orm: O, path: List<string>): PluckedJoinOneField<J, T>;
+}
+<%_
+	repeat(2, N, (n) => {
+		const typeParams = ["O extends Orm", ...range(1, n - 2, 1).map((i) => `T${ i } extends Orm`), "J extends Orm", "T"].join(", "),
+			onTypes = ["J", ...range(1, n - 2, 1).map((i) => `T${ i }`), "O"].join(", ");
+_%>
+export interface PluckedJoinOneFieldBuilder<%- n %><<%- typeParams %>> {
+	exclude(): this;
+	optional(): this;
+	auth(auth: JoinAuthFilter<%- n %><<%- onTypes %>>): this;
+	noAuth(): this;
+	$build(orm: O, path: List<string>): PluckedJoinOneField<J, T>;
+}
+<%_
+	});
+_%>
+
+export interface JoinManyFieldBuilder<O extends Orm, J extends Orm> extends BaseJoinManyFieldBuilder {
+	auth(auth: JoinAuthFilter): this;
+	noAuth(): this;
+	fields(fields: JoinFields<J>): this;
+	sortBy(sortBy: JoinSortBys<J>): this;
+	$build(orm: O, path: List<string>): JoinManyField<J>;
+}
+export type StartJoinManyFieldBuilder<O extends Orm, J extends Orm> = StartJoinManyFieldBuilder2<O, J>;
+export interface BaseJoinManyFieldBuilder {
+	include(): this;
+}
+<%_
+	repeat(2, N, (n) => {
+		const typeParams = ["O extends Orm", ...range(1, n - 2, 1).map((i) => `T${ i } extends Orm`), "J extends Orm"].join(", "),
+			throughOnTypes = ["J", ...range(1, n - 1).map((i) => `T${ i }`)].join(", "),
+			throughReturnTypes = ["O", ...range(1, n - 1).map((i) => `T${ i }`), "J"].join(", "),
+			onTypes = ["J", ...range(1, n - 2, 1).map((i) => `T${ i }`), "O"].join(", "),
+			onReturnTypes = ["O", ...range(1, n - 2, 1).map((i) => `T${ i }`), "J"].join(", "),
+			partitionToTypes = ["O", ...range(1, n - 2, 1).map((i) => `T${ i }`), "J", "K"].join(", "),
+			pluckTypes = ["O", ...range(1, n - 2, 1).map((i) => `T${ i }`), "J", "T"].join(", ");
+_%>
+export interface StartJoinManyFieldBuilder<%- n %><<%- typeParams %>> extends BaseJoinManyFieldBuilder {
+<%_
+		if (n !== N) {
+_%>
+	through<T<%- n - 1 %> extends Orm>(orm: OrmRef<T<%- n - 1 %>>, on: JoinOnFilter<%- n %><<%- throughOnTypes %>>): StartJoinManyFieldBuilder<%- n + 1 %><<%- throughReturnTypes %>>;
+<%_
+		}
+_%>
+	on(on: JoinOnFilter<%- n %><<%- onTypes %>>): EndJoinManyFieldBuilder<%- n %><<%- onReturnTypes %>>;
+}
+export interface EndJoinManyFieldBuilder<%- n %><<%- typeParams %>> extends BaseJoinManyFieldBuilder {
+	auth(auth: JoinAuthFilter<%- n %><<%- onTypes %>>): this;
+	noAuth(): this;
+	fields(fields: JoinFields<J>): this;
+	sortBy(sortBy: JoinSortBys<J>): this;
+	partitionTo<K extends string>(partitionTo: JoinManyPartitionTo<J, K>): PartitionedJoinManyFieldBuilder<%- n %><<%- partitionToTypes %>>;
+	pluck<T>(pluck: JoinPluck<J, T>): PluckedJoinManyFieldBuilder<%- n %><<%- pluckTypes %>>;
+	$build(orm: O, path: List<string>): JoinManyField<J>;
+}
+<%_
+	});
+_%>
+
+export interface PartitionedJoinManyFieldBuilder<O extends Orm, J extends Orm, K extends string> {
+	include(): this;
+	auth(auth: JoinAuthFilter): this;
+	noAuth(): this;
+	fields(fields: JoinFields<J>): this;
+	sortBy(sortBy: JoinSortBys<J>): this;
+	$build(orm: O, path: List<string>): PartitionedJoinManyField<J, K>;
+}
+<%_
+	repeat(2, N, (n) => {
+		const typeParams = ["O extends Orm", ...range(1, n - 2, 1).map((i) => `T${ i } extends Orm`), "J extends Orm", "K extends string"].join(", "),
+			onTypes = ["J", ...range(1, n - 2, 1).map((i) => `T${ i }`), "O"].join(", ");
+_%>
+export interface PartitionedJoinManyFieldBuilder<%- n %><<%- typeParams %>> {
+	include(): this;
+	auth(auth: JoinAuthFilter<%- n %><<%- onTypes %>>): this;
+	noAuth(): this;
+	fields(fields: JoinFields<J>): this;
+	sortBy(sortBy: JoinSortBys<J>): this;
+	$build(orm: O, path: List<string>): PartitionedJoinManyField<J, K>;
+}
+<%_
+	});
+_%>
+
+
+export interface PluckedJoinManyFieldBuilder<O extends Orm, J extends Orm, T> {
+	include(): this;
+	auth(auth: JoinAuthFilter): this;
+	noAuth(): this;
+	sort(sort: SortDirectionLike): this;
+	$build(orm: O, path: List<string>): PluckedJoinManyField<J, T>;
+}
+<%_
+	repeat(2, N, (n) => {
+		const typeParams = ["O extends Orm", ...range(1, n - 2, 1).map((i) => `T${ i } extends Orm`), "J extends Orm", "T"].join(", "),
+			onTypes = ["J", ...range(1, n - 2, 1).map((i) => `T${ i }`), "O"].join(", ");
+_%>
+export interface PluckedJoinManyFieldBuilder<%- n %><<%- typeParams %>> {
+	include(): this;
+	auth(auth: JoinAuthFilter<%- n %><<%- onTypes %>>): this;
+	noAuth(): this;
+	sort(sort: SortDirectionLike): this;
+	$build(orm: O, path: List<string>): PluckedJoinManyField<J, T>;
+}
+<%_
+	});
+_%>
