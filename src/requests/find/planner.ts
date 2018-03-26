@@ -1,4 +1,4 @@
-import { Map, Set } from "immutable";
+import { List, Map, Set } from "immutable";
 
 import {
 	AggregateField,
@@ -6,6 +6,7 @@ import {
 	ColumnField,
 	Composite,
 	DerivedField,
+	ExistsManyFilterNode,
 	Field,
 	Filter,
 	FindAllRequest,
@@ -159,7 +160,11 @@ export abstract class FindPlanner<Plan extends FindPlan> {
 		}
 
 		if (mergedFilter instanceof Filter) {
-			mergedFilter.fields.map((field) => field["🜁"].orm).forEach((filterOrm) => {
+			(List(ormFilters).filter((filter) => {
+				return filter instanceof Filter && !(filter instanceof ExistsManyFilterNode);
+			}) as List<Filter>).flatMap((filter) => {
+				return filter.fields;
+			}).toSet().map((field) => field["🜁"].orm).forEach((filterOrm) => {
 				this.addOrm(filterOrm);
 			});
 		}
