@@ -185,6 +185,32 @@ export class FindCountExecutor extends FindExecutor<FindCountPlan> {
 }
 
 export class FindModelsExecutor extends FindExecutor<FindModelsPlan> {
+	protected canShortCircuitExecution(): boolean {
+		const superShortCircuit = super.canShortCircuitExecution();
+		if (superShortCircuit) {
+			return true;
+		}
+
+		// check if base join
+		const baseJoinedBy = this.orm["🜀"].base["🜀"].joinedBy;
+		if (this.baseRows != null && baseJoinedBy != null && baseJoinedBy instanceof JoinManyField) {
+			const baseJoinFieldProps = baseJoinedBy["🜁"] as JoinManyFieldProperties<Orm>,
+				primaryFields = baseJoinFieldProps.orm["🜀"].primaryFields.toArray();
+
+			const missingBasePrimaryFields = this.baseRows.every((baseRow) => {
+				return primaryFields.some((field) => {
+					return (baseRow as any)[field["🜁"].fieldPath] === undefined;
+				});
+			});
+
+			if (missingBasePrimaryFields) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	protected buildKnexQuery(): void {
 		super.buildKnexQuery();
 
@@ -449,7 +475,9 @@ export class FindModelsExecutor extends FindExecutor<FindModelsPlan> {
 			// TODO: do this better!
 			Set(baseRows!.map((baseRow) => {
 				return List(primaryFields.map((field) => (baseRow as any)[field["🜁"].fieldPath]));
-			})).forEach((bindings) => {
+			})).filter((bindings) => {
+				return bindings.every((binding) => binding !== undefined);
+			}).forEach((bindings) => {
 				qb1.orWhere(this.database.raw(rawQuery, bindings.toArray()));
 			});
 		});
