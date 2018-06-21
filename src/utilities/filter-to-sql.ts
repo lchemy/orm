@@ -41,6 +41,7 @@ import {
 } from "../models";
 
 import { buildJoinQuery } from "./build-join-query";
+import { expandSqlTemplate } from "./expand-sql-template";
 import { wrapIdentifier } from "./wrap-identifier";
 
 export function filterToSql(db: Knex | undefined, filter: Filter, withPrefix: boolean = true): FilterSql {
@@ -129,43 +130,8 @@ function columnFilterNodeToSql(db: Knex | undefined, filter: ColumnFilterNode, w
 		throw new Error(`Unexpected filter node`);
 	}
 
-	let i = 0,
-		bindings = List<any>();
-	const l = values.length;
-
-	const mapField = (value: any): string => {
-		if (value instanceof DerivedField) {
-			return value["🜁"].getFieldSql(db, withPrefix);
-		} else if (value instanceof ColumnField) {
-			if (withPrefix) {
-				return wrapIdentifier(db, value["🜁"].fieldName);
-			} else {
-				return value["🜁"].column.name;
-			}
-		} else {
-			bindings = bindings.push(value);
-			return "?";
-		}
-	};
-
-	const sql = sqlTemplate.replace(/\?{1,2}/g, (match) => {
-		if (i >= l) {
-			// too many question marks, not enough arguments provided
-			throw new Error(`Number of sql parameters does not match provided parameters: ${ sqlTemplate } with ${ values }`);
-		}
-
-		if (match === "??") {
-			const arr = values[i++];
-			if (!Array.isArray(arr)) {
-				throw new Error(`Expected sql binding value to be an array`);
-			}
-			return arr.map(mapField).join(", ");
-		} else {
-			return mapField(values[i++]);
-		}
-	});
-
-	return new FilterSql(sql, bindings);
+	const { sql, bindings } = expandSqlTemplate(db, sqlTemplate, values, withPrefix);
+	return new FilterSql(sql, List(bindings));
 }
 
 // TODO: clean this up?

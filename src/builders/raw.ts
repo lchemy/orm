@@ -18,7 +18,7 @@ export interface WrappedRawBuilder {
 }
 
 export const raw = (() => {
-	const fn = ((sql: string, bindings?: any[] | Record<string, any>): WrappedRaw => {
+	const fn = ((sql: string, bindings?: any[]): WrappedRaw => {
 		return new WrappedRaw(sql, bindings);
 	}) as WrappedRawBuilder;
 

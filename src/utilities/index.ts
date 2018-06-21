@@ -1,6 +1,7 @@
 export * from "./attach-filter";
 export * from "./define-lazy-property";
 export * from "./expand-fields";
+export * from "./expand-sql-template";
 export * from "./filter-to-sql";
 export * from "./filter-to-string";
 export * from "./get-base-parent-orm";
