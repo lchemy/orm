@@ -10,7 +10,8 @@ module.exports = () => {
 			"src/**/*.spec.ts"
 		],
 		filesWithNoCoverageCalculated: [
-			"src/tests/**/*.ts"
+			"src/tests/**/*.ts",
+			"dist/*.*"
 		],
 		env: {
 			type: "node",
@@ -20,6 +21,7 @@ module.exports = () => {
 		setup: (wallaby) => {
 			const path = require("path");
 			wallaby.testFramework.configure({
+				testEnvironment: "node",
 				setupTestFrameworkScriptFile: path.join(wallaby.projectCacheDir, "src/tests/bootstrap.js")
 			});
 		}

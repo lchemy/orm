@@ -9,14 +9,19 @@ export function mergeResultSets(
 ): object[] {
 	const childPath = childOrm["🜀"].tablePath;
 
-	const primaryFieldPaths = childOrm["🜀"].parent!["🜀"].primaryFields.toArray().map((field) => field["🜁"].fieldPath);
+	const parentFieldPaths = childOrm["🜀"].parent!["🜀"].primaryFields.toArray().map((field) => field["🜁"].fieldPath);
 
 	return baseRows.map((baseRow) => {
-		const primaryFieldValues = primaryFieldPaths.map((name) => baseRow[name]);
+		const parentFieldValues = parentFieldPaths.map((name) => baseRow[name]),
+			parentExists = parentFieldValues.every((value) => value != null);
+
+		if (!parentExists) {
+			return baseRow;
+		}
 
 		const matchedRows = childRows.filter((childRow) => {
-			return primaryFieldPaths.every((name, i) => {
-				return childRow[name] === primaryFieldValues[i];
+			return parentFieldPaths.every((name, i) => {
+				return childRow[name] === parentFieldValues[i];
 			});
 		}).map((childRow) => {
 			return trimPath(childRow, childPath);
