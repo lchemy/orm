@@ -8,7 +8,7 @@ import {
 	JoinManyFieldProperties, JoinOn, JoinOneField, Orm, Pagination, RelationalOrm,
 	SortBy, SortDirectionLike, Subquery, Table, booleanDatum
 } from "../../models";
-import { attachFilter, filterToSql, getDbDialect, getExistsCheckValue, normalizeSortDirection, wrapIdentifier } from "../../utilities";
+import { attachFilter, filterToSql, getDbDialect, getExistsCheckValue, normalizeSortDirection, processAliases, wrapIdentifier } from "../../utilities";
 
 import { FindCountPlan, FindModelsPlan, FindPlan } from "./plan";
 
@@ -322,6 +322,7 @@ export class FindModelsExecutor extends FindExecutor<FindModelsPlan> {
 				} else {
 					out[fieldPath] = field["🜁"].column.datum.parseValue(this.dialect, row[fieldAs]);
 
+					processAliases(field["🜁"].orm);
 					const aliasField = field["🜁"].alias;
 					if (aliasField != null) {
 						const aliasPath = aliasField["🜁"].fieldPath;

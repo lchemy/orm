@@ -210,11 +210,11 @@ export abstract class FindPlanner<Plan extends FindPlan> {
 		const alias = field["🜁"].alias;
 		if (alias != null && !this.orms.has(orm)) {
 			// find out which one contains the other
-			const fieldTableAs = orm["🜀"].tableAs,
-				aliasTableAs = alias["🜁"].orm["🜀"].tableAs;
+			const fieldTablePath = orm["🜀"].tablePath,
+				aliasTablePath = alias["🜁"].orm["🜀"].tablePath;
 
 			// if field table contains field alias table, field alias table is the ancestor, use alias instead
-			if (fieldTableAs.includes(aliasTableAs)) {
+			if (fieldTablePath.includes(aliasTablePath)) {
 				const aliasedFields = this.aliasedFieldsByOrm.get(orm, Set<ColumnField>()).add(field);
 				this.aliasedFieldsByOrm = this.aliasedFieldsByOrm.set(orm, aliasedFields);
 
