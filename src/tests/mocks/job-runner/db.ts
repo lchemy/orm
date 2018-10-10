@@ -8,3 +8,7 @@ export const db = Knex({
 	},
 	useNullAsDefault: true
 });
+
+afterAll(async () => {
+	await db.destroy();
+});
