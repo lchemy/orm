@@ -1,7 +1,7 @@
 {
   "name": "@lchemy/orm",
   "description": "",
-  "version": "1.0.0-beta.9",
+  "version": "1.0.0-beta.10",
   "contributors": [
     "Jesse Zhang"
   ],
@@ -24,7 +24,7 @@
   "dependencies": {
     "@types/knex": "^0.14.18",
     "bignumber.js": "^7.2.1",
-    "immutable": "^4.0.0-rc.9",
+    "immutable": "4.0.0-rc.9",
     "js-joda": "^1.8.2",
     "knex": "^0.15.2"
   },

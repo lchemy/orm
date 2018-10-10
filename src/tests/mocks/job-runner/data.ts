@@ -2,7 +2,7 @@ import { Chance } from "chance";
 import { Map } from "immutable";
 
 import { db } from "./db";
-import { Job, JobLog, Worker, WorkerMetrics } from "./models";
+import { Job, JobLog, JobType, Worker, WorkerMetrics } from "./models";
 
 const BATCH_INSERT_LIMIT = 100;
 
@@ -108,9 +108,14 @@ export async function mockData(seed: Chance.Seed = 0): Promise<Data> {
 	// generate jobs
 	const jobsCount = chance.integer({ min: 10, max: 25 });
 	const jobs = Array(jobsCount).fill(undefined).map((_, i) => {
+		const typeId = chance.integer({ min: 1, max: 3 }),
+			type = JobType[typeId],
+			derivedType = type.toLowerCase();
 		return {
 			id: i + 1,
-			type: chance.integer({ min: 1, max: 3 }),
+			typeId,
+			type,
+			derivedType,
 			name: chance.string(),
 			logs: [],
 			logsByStatus: {
@@ -125,7 +130,7 @@ export async function mockData(seed: Chance.Seed = 0): Promise<Data> {
 	await db.batchInsert("jobs", jobs.map((job) => {
 		return {
 			id: job.id,
-			job_type_id: job.type,
+			job_type_id: job.typeId,
 			name: job.name
 		};
 	}), BATCH_INSERT_LIMIT);

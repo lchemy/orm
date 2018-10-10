@@ -33,7 +33,7 @@ type WhereFnName = "andWhere" | "orWhere" | "where";
 
 function getAttachFnName(mode: AttachFilterMode.WHERE, grouping?: AttachFilterGrouping): WhereFnName;
 function getAttachFnName(mode: AttachFilterMode.ON, grouping?: AttachFilterGrouping): JoinFnName;
-function getAttachFnName(mode: AttachFilterMode, grouping?: AttachFilterGrouping, exists?: boolean): JoinFnName | WhereFnName {
+function getAttachFnName(mode: AttachFilterMode, grouping?: AttachFilterGrouping): JoinFnName | WhereFnName {
 	if (mode === AttachFilterMode.ON) {
 		if (grouping != null) {
 			return (grouping === AttachFilterGrouping.AND ? "and" : "or") + "On" as JoinFnName;
