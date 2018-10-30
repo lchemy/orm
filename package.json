@@ -1,7 +1,7 @@
 {
   "name": "@lchemy/orm",
   "description": "",
-  "version": "1.0.0-beta.10",
+  "version": "1.0.0-beta.11",
   "contributors": [
     "Jesse Zhang"
   ],
@@ -22,16 +22,16 @@
     "prepublishOnly": "echo 'Cannot publish the development files. Publish the built files instead.' && exit 1"
   },
   "dependencies": {
-    "@types/knex": "^0.14.18",
+    "@types/knex": "^0.14.26",
     "bignumber.js": "^7.2.1",
-    "immutable": "4.0.0-rc.9",
-    "js-joda": "^1.8.2",
+    "immutable": "^4.0.0-rc.9",
+    "js-joda": "^1.9.2",
     "knex": "^0.15.2"
   },
   "devDependencies": {
-    "@lchemy/knex-bigquery-client": "^1.0.1",
+    "@lchemy/knex-bigquery-client": "^1.1.0",
     "@types/chance": "^1.0.1",
-    "@types/jest": "^23.3.1",
+    "@types/jest": "^23.3.8",
     "chance": "^1.0.16",
     "coveralls": "^3.0.2",
     "del": "^3.0.0",
@@ -42,13 +42,13 @@
     "gulp-plumber": "^1.2.0",
     "gulp-tslint": "^8.1.3",
     "gulp-typescript": "^5.0.0-alpha.3",
-    "jest": "^23.4.2",
-    "jest-cli": "^23.4.2",
-    "merge2": "^1.2.2",
-    "sqlite3": "^4.0.2",
-    "ts-jest": "^23.0.1",
+    "jest": "^23.6.0",
+    "jest-cli": "^23.6.0",
+    "merge2": "^1.2.3",
+    "sqlite3": "^4.0.3",
+    "ts-jest": "^23.10.4",
     "tslint": "^5.11.0",
-    "typescript": "^2.9.2",
+    "typescript": "^3.1.4",
     "vinyl-map": "^1.0.2"
   }
 }

@@ -96,7 +96,7 @@ export class InsertExecutor {
 
 		const { lastId, rowCount } = (await insertStatsQb)[0] as { lastId: number, rowCount: number },
 			ids = Array(rowCount).fill(undefined).map((_, i) => lastId - rowCount + i + 1),
-			idField = this.orm["🜀"].primaryFields.first()!,
+			idField = this.orm["🜀"].primaryFields.first<never>()!,
 			idPath = idField["🜁"].path.slice(1).join("$");
 
 		return ids.map((id) => {
