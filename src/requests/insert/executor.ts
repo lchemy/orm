@@ -79,25 +79,27 @@ export class InsertExecutor {
 	private async executeWithoutReturning(trx: Transaction): Promise<object[]> {
 		await this.buildKnexQuery(trx);
 
-		let insertStatsQb;
+		let insertStatsQb, ids;
 		if (this.dialect === "sqlite3") {
 			insertStatsQb = trx.select([
 				this.database.raw("LAST_INSERT_ROWID() AS lastId"),
 				this.database.raw(`${ this.plan.items.length } AS rowCount`)
 			]);
+		let { lastId, rowCount } = (await insertStatsQb)[0] as { lastId: number, rowCount: number };
+		ids = Array(rowCount).fill(undefined).map((_, i) => lastId - rowCount + i + 1);
 		} else if (this.dialect === "mysql") {
 			insertStatsQb = trx.select([
 				this.database.raw("LAST_INSERT_ID() AS lastId"),
 				this.database.raw(`ROW_COUNT() AS rowCount`)
 			]);
+			let { lastId, rowCount } = (await insertStatsQb)[0] as { lastId: number, rowCount: number };
+			ids = Array(rowCount).fill(undefined).map((_, i) => lastId + rowCount - i - 1);
 		} else {
 			throw new Error(`Insert for dialect ${ this.dialect } has not been implemented yet`);
 		}
 
-		const { lastId, rowCount } = (await insertStatsQb)[0] as { lastId: number, rowCount: number },
-			ids = Array(rowCount).fill(undefined).map((_, i) => lastId - rowCount + i + 1),
-			idField = this.orm["🜀"].primaryFields.first<never>()!,
-			idPath = idField["🜁"].path.slice(1).join("$");
+		const idField = this.orm["🜀"].primaryFields.first<never>()!;
+		const idPath = idField["🜁"].path.slice(1).join("$");
 
 		return ids.map((id) => {
 			const item = {
