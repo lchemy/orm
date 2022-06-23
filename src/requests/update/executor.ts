@@ -58,7 +58,12 @@ export class UpdateExecutor {
 		}
 
 		const qb = this.database(this.schema["🜃"].table).del().transacting(trx);
-		attachFilter(this.database, qb, change.filter, AttachFilterMode.WHERE, false);
+		attachFilter(this.database,
+			// @ts-ignore
+			qb,
+			change.filter,
+			AttachFilterMode.WHERE,
+			false);
 
 		change.set.forEach((value, key) => {
 			if (value instanceof WrappedRaw) {

@@ -20,11 +20,13 @@ export function attachFilter(db: Knex, qb: QueryBuilder | JoinClause, filter: Fi
 		if (filter) {
 			return qb;
 		} else {
+			// @ts-ignore
 			return fn.call(qb, db.raw("1 = 0"));
 		}
 	}
 
 	const filterSql = filterToSql(db, filter, withPrefix);
+	// @ts-ignore
 	return fn.call(qb, db.raw(filterSql.sql, filterSql.getBindings(db)));
 }
 

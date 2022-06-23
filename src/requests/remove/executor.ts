@@ -50,7 +50,13 @@ export class RemoveExecutor {
 		}
 
 		const qb = this.database(this.schema["🜃"].table).del().transacting(trx);
-		attachFilter(this.database, qb, filter, AttachFilterMode.WHERE, false);
+		attachFilter(this.database,
+			// @ts-ignore
+			qb,
+			filter,
+			AttachFilterMode.WHERE,
+			false);
+		// @ts-ignore
 		return qb;
 	}
 

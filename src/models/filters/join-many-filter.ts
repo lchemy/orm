@@ -26,6 +26,7 @@ export abstract class JoinExistsManyFilterNode<O extends Orm = Orm> extends Filt
 				props.orm
 			];
 
+			// @ts-ignore
 			this.value = typeof query === "function" ? query.apply(undefined, orms) : query;
 			this.fields = this.fields.union(this.value!.fields);
 		}

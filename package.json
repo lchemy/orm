@@ -22,14 +22,13 @@
     "prepublishOnly": "echo 'Cannot publish the development files. Publish the built files instead.' && exit 1"
   },
   "dependencies": {
-    "@types/knex": "^0.14.26",
     "bignumber.js": "^7.2.1",
     "immutable": "^4.0.0-rc.9",
     "js-joda": "^1.9.2",
-    "knex": "^0.15.2"
+    "knex": "0.19.5"
   },
   "devDependencies": {
-    "@lchemy/knex-bigquery-client": "^1.1.0",
+    "@lchemy/knex-bigquery-client": "file:/Users/C72231A/source-code/tapad/lchemy/knex-bigquery-client",
     "@types/chance": "^1.0.1",
     "@types/jest": "^23.3.8",
     "chance": "^1.0.16",

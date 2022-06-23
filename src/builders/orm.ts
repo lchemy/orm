@@ -352,14 +352,14 @@ function scaffold<O extends Orm, T extends Scaffold | Orm>(
 
 			if (fields != null) {
 				compositeProps.fields = Set(compositeFields!);
-				fields.push.apply(fields, compositeFields);
+				fields.push.apply(fields, compositeFields!);
 			} else {
 				compositeProps.fields = Set();
 			}
 
 			if (defaultFields != null) {
 				compositeProps.defaultFields = expandFields(compositeDefaultFields!);
-				defaultFields.push.apply(defaultFields, compositeDefaultFields);
+				defaultFields.push.apply(defaultFields, compositeDefaultFields!);
 			} else {
 				compositeProps.defaultFields = Set();
 			}

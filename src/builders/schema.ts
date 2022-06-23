@@ -32,8 +32,9 @@ export class StartSchemaBuilder {
 		schema["🜃"].database = Promise.resolve(this.db);
 
 		const columns = definition(columnBuilders);
-		Object.keys(columns).forEach((key: keyof S) => {
+		Object.keys(columns).forEach((key) => {
 			const column = columns[key];
+			// @ts-ignore
 			schema[key] = column;
 			column.schema = schema;
 		});
